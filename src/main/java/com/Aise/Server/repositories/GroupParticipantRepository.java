@@ -11,4 +11,5 @@ public interface GroupParticipantRepository extends JpaRepository<GroupParticipa
   List<GroupParticipant> getAllByGroup_Id(Long groupId);
   List<GroupParticipant> getAllByUser_Email(String email);
   List<GroupParticipant> getAllByUser_Id(Long id);
+  Boolean existsByGroup_IdAndUser_id(Long groupId, Long userId);
 }

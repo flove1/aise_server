@@ -1,6 +1,6 @@
 package com.Aise.Server.models;
 
-import java.sql.Timestamp;
+import java.sql.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +19,7 @@ public class Task {
   @Column @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
   @Column private String title;
   
-  @Column private Timestamp deadline;
+  @Column private Date deadline;
   @Column private String description;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Course.class)
@@ -37,7 +37,7 @@ public class Task {
   public String getDescription() {
     return description;
   }
-  public Timestamp getDeadline() {
+  public Date getDeadline() {
     return deadline;
   }
   public Course getCourse() {
@@ -50,7 +50,7 @@ public class Task {
   public void setDescription(String description) {
     this.description = description;
   }
-  public void setDeadline(Timestamp deadline) {
+  public void setDeadline(Date deadline) {
     this.deadline = deadline;
   }
   public void setCourse(Course course) {

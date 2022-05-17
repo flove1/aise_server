@@ -63,7 +63,7 @@ public class CoursesController {
 							object.put("courseId", course.getId());
 							object.put("courseName", course.getCourseName());
 							object.put("groupId", course.getGroup().getId());
-							object.put("groupNam", course.getGroup().getGroupName());
+							object.put("groupName", course.getGroup().getGroupName());
 							responseObject.put(object);
 						});
 					});
@@ -77,7 +77,7 @@ public class CoursesController {
 								object.put("courseId", course.getId());
 								object.put("courseName", course.getCourseName());
 								object.put("groupId", course.getGroup().getId());
-								object.put("groupNam", course.getGroup().getGroupName());
+								object.put("groupName", course.getGroup().getGroupName());
 								responseObject.put(object);
 							});
 						});
@@ -88,7 +88,7 @@ public class CoursesController {
 							object.put("courseId", course.getId());
 							object.put("courseName", course.getCourseName());
 							object.put("groupId", course.getGroup().getId());
-							object.put("groupNam", course.getGroup().getGroupName());
+							object.put("groupName", course.getGroup().getGroupName());
 							responseObject.put(object);
 						});
 					}

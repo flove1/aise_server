@@ -1,6 +1,7 @@
 package com.Aise.Server.controllers;
 
 import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -71,10 +72,18 @@ public class LessonsController {
 				JSONObject object = new JSONObject();
 				object.put("course", lesson.getCourse().getCourseName());
 				object.put("courseId", lesson.getCourse().getId());
-				object.put("start", lesson.getStartTime().toString());
-				object.put("end", lesson.getEndTime().toString());
+				object.put("start", lesson.getStartTime());
+				object.put("end", lesson.getEndTime());
 				object.put("room", lesson.getRoom().getRoom());
 				object.put("type", lesson.getType().toString());
+				if (lesson.getType() == LessonTypes.LECTURE) {
+					object.put("teacher", lesson.getCourse().getLecturer().getName());
+					object.put("teacherId", lesson.getCourse().getLecturer().getId());
+				}
+				else {
+					object.put("teacher", lesson.getCourse().getPracticant().getName());
+					object.put("teacherId", lesson.getCourse().getPracticant().getId());
+				}
 				object.put("weekday", lesson.getWeekDay());
 				responseObject.put(object);
 			});

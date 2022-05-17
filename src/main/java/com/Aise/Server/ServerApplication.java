@@ -34,6 +34,7 @@ public class ServerApplication {
 				.antMatchers(HttpMethod.GET, "/courses").permitAll()
 				.antMatchers(HttpMethod.GET, "/tasks").permitAll()
 				.antMatchers(HttpMethod.GET, "/lessons").permitAll()
+				.antMatchers(HttpMethod.GET, "/tasks/grade").permitAll()
 				.antMatchers(HttpMethod.POST, "/users").permitAll()
 				.antMatchers(HttpMethod.POST, "/groups").permitAll()
 				.antMatchers(HttpMethod.POST, "/groups/user").permitAll()

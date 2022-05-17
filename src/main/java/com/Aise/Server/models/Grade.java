@@ -27,6 +27,8 @@ public class Grade {
 
   @Column private int grade;
   @Column @Lob private String comment;
+  @Column @Lob private String submission;
+  @Column(columnDefinition = "BIT") private Boolean finished;
 
   public long getId() {
     return id;
@@ -43,6 +45,12 @@ public class Grade {
   public String getComment() {
     return comment;
   }
+  public String getSubmission() {
+    return submission;
+  }
+  public Boolean getFinished() {
+    return finished;
+  }
 
   public void setTask(Task task) {
     this.task = task;
@@ -55,5 +63,11 @@ public class Grade {
   }
   public void setComment(String comment) {
     this.comment = comment;
+  }
+  public void setSubmission(String submission) {
+    this.submission = submission;
+  }
+  public void setFinished(Boolean finished) {
+    this.finished = finished;
   }
 }
