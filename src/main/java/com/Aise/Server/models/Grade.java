@@ -25,7 +25,7 @@ public class Grade {
   @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;
 
-  @Column private int grade;
+  @Column private Integer grade;
   @Column @Lob private String comment;
   @Column @Lob private String submission;
   @Column(columnDefinition = "BIT") private Boolean finished;
@@ -39,7 +39,7 @@ public class Grade {
   public User getUser() {
     return user;
   }
-  public int getGrade() {
+  public Integer getGrade() {
     return grade;
   }
   public String getComment() {
@@ -58,7 +58,7 @@ public class Grade {
   public void setUser(User user) {
     this.user = user;
   }
-  public void setGrade(int grade) {
+  public void setGrade(Integer grade) {
     this.grade = grade;
   }
   public void setComment(String comment) {

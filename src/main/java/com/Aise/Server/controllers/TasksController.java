@@ -43,6 +43,7 @@ public class TasksController {
 	JSONObject taskCreateJsonObject(Task task) {
     JSONObject object = new JSONObject();
     object.put("title", task.getTitle());
+    object.put("taskId", task.getId());
     object.put("deadline", task.getDeadline());
     object.put("description", task.getDescription());
     object.put("course", task.getCourse().getCourseName());
@@ -95,13 +96,17 @@ public class TasksController {
 				else {
 					if (user.getRole() == Roles.USER) {
 						if (showFinished != null) {
-							gradeRepository.getAllByFinishedAndUser_Id(showFinished, user.getId()).forEach(grade -> {
-								responseObject.put(taskCreateJsonObject(grade.getTask()));
+							gradeRepository.getAllByUser_Id(user.getId()).forEach(grade -> {
+								JSONObject object = taskCreateJsonObject(grade.getTask());
+								object.put("finished", grade.getFinished());
+								responseObject.put(object);
 							});
 						}
 						else {
-							gradeRepository.getAllByUser_Id(user.getId()).forEach(grade -> {
-								responseObject.put(taskCreateJsonObject(grade.getTask()));
+							gradeRepository.getAllByFinishedAndUser_Id(false, user.getId()).forEach(grade -> {
+								JSONObject object = taskCreateJsonObject(grade.getTask());
+								object.put("finished", grade.getFinished());
+								responseObject.put(object);
 							});
 						}
 					}
@@ -137,17 +142,20 @@ public class TasksController {
 					Task task = new Task();
 					task.setTitle(title);
 					task.setDeadline(Date.valueOf(deadline));
-					task.setDescription(desc);
+					task.setDescription(desc==null?"No description":desc);
 					task.setCourse(courseRepository.getById(courseId));
 					taskRepository.save(task);
 					groupParticipantRepository.getAllByGroup_Id(courseRepository.getById(courseId).getGroup().getId()).forEach(part -> {
 						Grade grade = new Grade();
+						grade.setComment("");
+						grade.setFinished(false);
 						grade.setUser(part.getUser());
 						grade.setTask(task);
 						gradeRepository.save(grade);
 					});
 					return new ResponseEntity<String>("New task was succesfuly created", HttpStatus.CREATED);
 				} catch (NullPointerException|DataIntegrityViolationException e) {
+					e.printStackTrace();
 					return new ResponseEntity<String>("Wrong parameters", HttpStatus.BAD_REQUEST);
 				}
 			}
@@ -185,22 +193,43 @@ public class TasksController {
 	@GetMapping("/tasks/grade")
 	@ResponseBody
 	public ResponseEntity<String> tasksGradeGet(
+		@RequestParam(required = false) Long taskId,
 		@RequestParam String token){
 		try {
-			JSONArray responseObject = new JSONArray();
 			User user = tokenRepository.getByToken(token).getUser();
 			if (user.getRole() == Roles.USER) {
-				gradeRepository.getAllByUser_Id(user.getId()).forEach(grade -> {
-					JSONObject object = new JSONObject();
-					object.put("title", grade.getTask().getTitle());
-					object.put("course", grade.getTask().getCourse().getCourseName());
-					object.put("grade", grade.getGrade());
-					object.put("comment", grade.getComment());
-					responseObject.put(object);
-				});
-				return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
+				try {
+					if (taskId != null) {
+						JSONObject responseObject = new JSONObject();
+						Grade grade = gradeRepository.getByUser_IdAndTask_Id(user.getId(), taskId);
+						responseObject.put("title", grade.getTask().getTitle());
+						responseObject.put("taskId", grade.getTask().getId());
+						responseObject.put("grade", grade.getGrade()==null? "-/-":String.valueOf(grade.getGrade()));
+						responseObject.put("name", grade.getTask().getCourse().getPracticant().getName());
+						responseObject.put("description", grade.getTask().getDescription());
+						responseObject.put("submission", grade.getSubmission()==null? "No submission":grade.getSubmission());
+						responseObject.put("comment", grade.getComment());
+						return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
+					}
+					else {
+						JSONArray responseObject = new JSONArray();
+						gradeRepository.getAllByUser_Id(user.getId()).forEach(grade -> {
+							JSONObject object = new JSONObject();
+							object.put("title", grade.getTask().getTitle());
+							object.put("taskId", grade.getTask().getId());
+							object.put("course", grade.getTask().getCourse().getCourseName());
+							object.put("grade", grade.getGrade()==null? "-/-":grade.getGrade());
+							object.put("comment", grade.getComment());
+							object.put("finished", grade.getFinished());
+							responseObject.put(object);
+						});
+						return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
+					}
+				} catch (NullPointerException e) {
+					return new ResponseEntity<String>("Wrong parameters", HttpStatus.BAD_REQUEST);
+				}
 			}
-			return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
+			return new ResponseEntity<String>("No tasks", HttpStatus.BAD_REQUEST);
 		} catch (NullPointerException|DataIntegrityViolationException e) {
 			return new ResponseEntity<String>("Invalid token", HttpStatus.BAD_REQUEST);
 		}  
