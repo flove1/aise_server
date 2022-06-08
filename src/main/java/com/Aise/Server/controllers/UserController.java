@@ -1,6 +1,7 @@
 package com.Aise.Server.controllers;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.Aise.Server.models.GroupParticipant;
@@ -51,13 +52,18 @@ public class UserController {
 				Token token = new Token(user);		
 				tokenRepository.save(token);
 				tokenRepository.deleteByExpiryDateLessThan(new Date(System.currentTimeMillis()));
-				return new ResponseEntity<String>(token.getToken(), HttpStatus.CREATED);
+				JSONObject responseObject = new JSONObject();
+				responseObject.put("token", token.getToken());
+				responseObject.put("role", user.getRole().toString());
+				responseObject.put("name", user.getName());
+				responseObject.put("id", user.getId());
+				return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.CREATED);
 			}
 			else {
-				return new ResponseEntity<String>("Wrong password", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<String>("Wrong credentials", HttpStatus.BAD_REQUEST);
 			}
 		} catch (NullPointerException|DataIntegrityViolationException e) {
-			return new ResponseEntity<String>("No such user exists", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<String>("Wrong credentials", HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -65,7 +71,8 @@ public class UserController {
 	@ResponseBody
 	public ResponseEntity<String> userGet(
 		@RequestParam(required = false) Long groupId,
-		@RequestParam(required = false) Roles role,
+		@RequestParam(required = false) Boolean showStudents,
+		@RequestParam(required = false) Boolean showTeachers,
 		@RequestParam String token) {
 		if (tokenRepository.existsByToken(token)) {
 			JSONArray responseObject = new JSONArray();
@@ -73,24 +80,35 @@ public class UserController {
 				List<GroupParticipant> list = groupParticipantRepository.getAllByGroup_Id(groupId);
 				list.forEach(user -> {
 					JSONObject object = new JSONObject();
+					object.put("id", user.getUser().getId());
 					object.put("name", user.getUser().getName());
 					object.put("email", user.getUser().getEmail());
 					responseObject.put(object);
 				});
 				return new ResponseEntity<String>(responseObject.toString(), HttpStatus.CREATED);
 			}
-			else if (role != null) {
-				List<User> list = userRepository.getAllByRole(role);
-				list.forEach(user -> {
-					JSONObject object = new JSONObject();
-					object.put("name", user.getName());
-					object.put("email", user.getEmail());
-					responseObject.put(object);
-				});
-				return new ResponseEntity<String>(responseObject.toString(), HttpStatus.CREATED);
-			}
 			else {
-				return new ResponseEntity<String>("Bad request", HttpStatus.BAD_REQUEST);
+				List<User> list = new ArrayList<>();
+				if (Boolean.TRUE.equals(showTeachers) || Boolean.TRUE.equals(showStudents)) {
+					if (Boolean.TRUE.equals(showTeachers)) {
+						list.addAll(userRepository.getAllByRole(Roles.TEACHER));
+						list.addAll(userRepository.getAllByRole(Roles.ADMIN));
+					}
+					if (Boolean.TRUE.equals(showStudents)) {
+						list.addAll(userRepository.getAllByRole(Roles.STUDENT));
+					}
+					list.forEach(user -> {
+						JSONObject object = new JSONObject();
+						object.put("id", user.getId());
+						object.put("name", user.getName());
+						object.put("email", user.getEmail());
+						responseObject.put(object);
+					});
+					return new ResponseEntity<String>(responseObject.toString(), HttpStatus.CREATED);	
+				}
+				else {
+					return new ResponseEntity<String>("Bad request", HttpStatus.BAD_REQUEST);	
+				}
 			}
 		}
 		else {
@@ -100,9 +118,10 @@ public class UserController {
 
   @PostMapping("/users") 
 	@ResponseBody
-	public ResponseEntity<String> userPost(@RequestParam String email, 
-		@RequestParam String password,
+	public ResponseEntity<String> userPost(
 		@RequestParam String name, 
+		@RequestParam String email, 
+		@RequestParam(required = false) String password,
 		@RequestParam(required = false) String role,
 		@RequestParam String token) {
 			try {
@@ -111,11 +130,13 @@ public class UserController {
 						User user = new User();
 						user.setEmail(email);
 						user.setName(name);
-						user.setPassword(password);
+						if (password != null) {
+							user.setPassword(password);
+						}
 						try {
 							user.setRole(Roles.valueOf(role));
 						} catch (IllegalArgumentException e) {
-							user.setRole(Roles.USER);
+							user.setRole(Roles.STUDENT);
 						}
 						userRepository.save(user);
 						return new ResponseEntity<String>("New user was created", HttpStatus.CREATED);

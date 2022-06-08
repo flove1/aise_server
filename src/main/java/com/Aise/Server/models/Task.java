@@ -1,6 +1,7 @@
 package com.Aise.Server.models;
 
 import java.sql.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 
@@ -20,11 +22,14 @@ public class Task {
   @Column private String title;
   
   @Column private Date deadline;
-  @Column private String description;
+  @Column private String description = "No description";
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Course.class)
   @JoinColumn(name = "course_id", referencedColumnName = "id")
   private Course course;
+
+  @OneToMany(mappedBy = "task")
+  List<Grade> grades;
 
   public Task() {}
   
@@ -43,6 +48,9 @@ public class Task {
   public Course getCourse() {
     return course;
   }
+  public List<Grade> getGrades() {
+    return grades;
+  }
 
   public void setTitle(String title) {
     this.title = title;
@@ -55,5 +63,8 @@ public class Task {
   }
   public void setCourse(Course course) {
     this.course = course;
+  }
+  public void setGrades(List<Grade> grades) {
+    this.grades = grades;
   }
 }

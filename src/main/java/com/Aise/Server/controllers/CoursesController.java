@@ -49,6 +49,7 @@ public class CoursesController {
 	@GetMapping("/courses")
 	@ResponseBody
 	public ResponseEntity<String> coursesGet( 
+		@RequestParam(required = false) Long groupId,
 		@RequestParam(required = false) Long userId,
 		@RequestParam String token) {
 		try {
@@ -56,22 +57,9 @@ public class CoursesController {
 			User user = tokenRepository.getByToken(token).getUser();
 			try {
 				//if request was sent by user
-				if (user.getRole() == Roles.USER) {
-					groupParticipantRepository.getAllByUser_Id(user.getId()).forEach(group -> {
-						group.getGroup().getCourses().forEach(course -> {
-							JSONObject object = new JSONObject();
-							object.put("courseId", course.getId());
-							object.put("courseName", course.getCourseName());
-							object.put("groupId", course.getGroup().getId());
-							object.put("groupName", course.getGroup().getGroupName());
-							responseObject.put(object);
-						});
-					});
-				}
-				//if request was sent by teacher or admin
-				else {
-					if (userId != null) {
-						groupParticipantRepository.getAllByUser_Id(userId).forEach(group -> {
+				switch (user.getRole()) {
+					case STUDENT:
+						groupParticipantRepository.getAllByUser_Id(user.getId()).forEach(group -> {
 							group.getGroup().getCourses().forEach(course -> {
 								JSONObject object = new JSONObject();
 								object.put("courseId", course.getId());
@@ -81,17 +69,53 @@ public class CoursesController {
 								responseObject.put(object);
 							});
 						});
-					}
-					else { 
-						courseRepository.getAllByLecturer_IdOrPracticant_Id(user.getId(), user.getId()).forEach(course -> {
-							JSONObject object = new JSONObject();
-							object.put("courseId", course.getId());
-							object.put("courseName", course.getCourseName());
-							object.put("groupId", course.getGroup().getId());
-							object.put("groupName", course.getGroup().getGroupName());
-							responseObject.put(object);
-						});
-					}
+						break;
+					case TEACHER:
+						if (userId != null) {
+							groupParticipantRepository.getAllByUser_Id(userId).forEach(group -> {
+								group.getGroup().getCourses().forEach(course -> {
+									JSONObject object = new JSONObject();
+									object.put("courseId", course.getId());
+									object.put("courseName", course.getCourseName());
+									object.put("groupId", course.getGroup().getId());
+									object.put("groupName", course.getGroup().getGroupName());
+									responseObject.put(object);
+								});
+							});
+						}
+						else { 
+							courseRepository.getAllByLecturer_IdOrPracticant_Id(user.getId(), user.getId()).forEach(course -> {
+								JSONObject object = new JSONObject();
+								object.put("courseId", course.getId());
+								object.put("courseName", course.getCourseName());
+								object.put("groupId", course.getGroup().getId());
+								object.put("groupName", course.getGroup().getGroupName());
+								responseObject.put(object);
+							});
+						}
+						break;
+					case ADMIN:
+						if (groupId != null) {
+							courseRepository.getAllByGroup_Id(groupId).forEach(course -> {
+								JSONObject object = new JSONObject();
+								object.put("courseId", course.getId());
+								object.put("courseName", course.getCourseName());
+								object.put("groupId", course.getGroup().getId());
+								object.put("groupName", course.getGroup().getGroupName());
+								responseObject.put(object);
+							});
+						}
+						else {
+							courseRepository.findAll().forEach(course -> {
+								JSONObject object = new JSONObject();
+								object.put("courseId", course.getId());
+								object.put("courseName", course.getCourseName());
+								object.put("groupId", course.getGroup().getId());
+								object.put("groupName", course.getGroup().getGroupName());
+								responseObject.put(object);
+							});	
+						}
+						break;
 				}
 				return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
 			} catch (NullPointerException|DataIntegrityViolationException e) {

@@ -17,7 +17,7 @@ public class User{
   @Column @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
   @Column(unique = true) private String email;
   @Column private String name;
-  @Column private String password;
+  @Column private String password = "Aitu2022!";
   @Column @Enumerated(EnumType.STRING) private Roles role;
 
   public User() {}

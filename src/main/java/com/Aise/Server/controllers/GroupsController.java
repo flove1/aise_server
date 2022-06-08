@@ -67,6 +67,7 @@ public class GroupsController {
       list.forEach(group -> {
         JSONObject object = new JSONObject();
         object.put("groupName", group.getGroupName());
+        object.put("groupId", group.getId());
         responseObject.put(object);
       });
       return new ResponseEntity<String>(responseObject.toString(), HttpStatus.CREATED);

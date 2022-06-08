@@ -51,8 +51,9 @@ public class LessonsController {
 			JSONArray responseObject = new JSONArray();
 			User user = tokenRepository.getByToken(token).getUser();
 			DayOfWeek selectedDay = (weekDay==null?DayOfWeek.of(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)):weekDay);
+			System.out.println(selectedDay);
 			ArrayList<Lesson> lessonsList = new ArrayList<>();
-			if (user.getRole() == Roles.USER) {
+			if (user.getRole() == Roles.STUDENT) {
 				groupParticipantRepository.getAllByUser_Id(user.getId()).forEach(group -> {
 					group.getGroup().getCourses().forEach(course -> {
 						lessonRepository.getAllByCourse_IdAndWeekDay(course.getId(), selectedDay).forEach(lesson -> {
@@ -106,7 +107,7 @@ public class LessonsController {
 		@RequestParam String token) {
 		try {
 			User user = tokenRepository.getByToken(token).getUser();
-			if (user.getRole() != Roles.USER) {
+			if (user.getRole() != Roles.STUDENT) {
 				try {
 					Lesson lesson = new Lesson();
 					lesson.setCourse(courseRepository.getById(courseId));
@@ -151,4 +152,23 @@ public class LessonsController {
       return new ResponseEntity<String>("Invalid token", HttpStatus.BAD_REQUEST);
 		}
   }
+
+	@GetMapping("/rooms")
+	@ResponseBody
+	public ResponseEntity<String> roomsGet(
+		@RequestParam String token) {
+			if (tokenRepository.existsByToken(token)) {
+				JSONArray responseObject = new JSONArray();
+				roomRepository.findAll().forEach(room -> {
+					JSONObject object = new JSONObject();
+					object.put("room", room.getRoom());
+					responseObject.put(object);
+				});
+				return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
+
+			}
+			else {
+				return new ResponseEntity<String>("Invalid token", HttpStatus.BAD_REQUEST);
+			}
+		}
 }

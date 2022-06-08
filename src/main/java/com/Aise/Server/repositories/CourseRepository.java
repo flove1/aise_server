@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CourseRepository extends JpaRepository<Course, Long> {  
   List<Course> getAllByLecturer_IdOrPracticant_Id(Long lecturerId, Long practicantId);
+  List<Course> getAllByPracticant_id(Long practicantId);
+  List<Course> getAllByGroup_Id(Long groupId);
 }
