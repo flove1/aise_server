@@ -1,5 +1,6 @@
 package com.Aise.Server.models;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -10,16 +11,20 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity()
 @Table(name="group_participants")
 public class GroupParticipant {
   @Column @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Group.class)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Group.class, cascade = CascadeType.REMOVE)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "group_id", referencedColumnName = "id")
   private Group group;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = User.class)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = User.class, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "participant_id", referencedColumnName = "id")
   private User user;
 

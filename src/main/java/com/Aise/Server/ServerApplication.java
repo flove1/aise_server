@@ -38,7 +38,7 @@ public class ServerApplication {
 				.antMatchers(HttpMethod.GET, "/rooms").permitAll()
 				.antMatchers(HttpMethod.POST, "/users").permitAll()
 				.antMatchers(HttpMethod.POST, "/groups").permitAll()
-				.antMatchers(HttpMethod.POST, "/groups/user").permitAll()
+				.antMatchers(HttpMethod.PUT, "/groups/user").permitAll()
 				.antMatchers(HttpMethod.POST, "/courses").permitAll()
 				.antMatchers(HttpMethod.POST, "/tasks").permitAll()
 				.antMatchers(HttpMethod.POST, "/lessons").permitAll()
@@ -46,6 +46,7 @@ public class ServerApplication {
 				.antMatchers(HttpMethod.PUT, "/tasks").permitAll()
 				.antMatchers(HttpMethod.DELETE, "/tasks").permitAll()
 				.antMatchers(HttpMethod.DELETE, "/lessons").permitAll()
+				.antMatchers(HttpMethod.DELETE, "/courses").permitAll()
 				.anyRequest().authenticated();
 		}
 	}

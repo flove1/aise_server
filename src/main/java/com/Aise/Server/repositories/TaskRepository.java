@@ -2,6 +2,8 @@ package com.Aise.Server.repositories;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import com.Aise.Server.models.Task;
 
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,5 +1,6 @@
 package com.Aise.Server.controllers;
 
+import java.sql.Blob;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -73,31 +74,31 @@ public class TasksController {
 						responseObject.put(object);
 					});
 				}
-			else {
-				if (showGrades != null) {
-					courseRepository.getAllByPracticant_id(user.getId()).forEach(course -> {
-						course.getTasks().forEach(task -> {
-							JSONObject taskObject = taskCreateJsonObject(task);
-							JSONArray gradesArray = new JSONArray();
-							task.getGrades().forEach(grade -> {
-								JSONObject gradeObject = new JSONObject();
-								gradeObject.put("studentId", grade.getUser().getId());
-								gradeObject.put("finished", grade.getFinished());
-								gradesArray.put(gradeObject);
-							});
-							taskObject.put("grades", gradesArray);
-							responseObject.put(taskObject);
-						});
-					});
-				}
 				else {
-					courseRepository.getAllByPracticant_id(user.getId()).forEach(course -> {
-						course.getTasks().forEach(task -> {
-							responseObject.put(taskCreateJsonObject(task));
+					if (showGrades != null) {
+						courseRepository.getAllByPracticant_id(user.getId()).forEach(course -> {
+							course.getTasks().forEach(task -> {
+								JSONObject taskObject = taskCreateJsonObject(task);
+								JSONArray gradesArray = new JSONArray();
+								task.getGrades().forEach(grade -> {
+									JSONObject gradeObject = new JSONObject();
+									gradeObject.put("studentId", grade.getUser().getId());
+									gradeObject.put("finished", grade.getFinished());
+									gradesArray.put(gradeObject);
+								});
+								taskObject.put("grades", gradesArray);
+								responseObject.put(taskObject);
+							});
 						});
-					});
+					}
+					else {
+						courseRepository.getAllByPracticant_id(user.getId()).forEach(course -> {
+							course.getTasks().forEach(task -> {
+								responseObject.put(taskCreateJsonObject(task));
+							});
+						});
+					}
 				}
-			}
 				return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
 			} catch (NullPointerException|DataIntegrityViolationException e) {
 				return new ResponseEntity<String>("Wrong parameters", HttpStatus.BAD_REQUEST);
@@ -217,42 +218,33 @@ public class TasksController {
 					JSONObject responseObject = new JSONObject();
 					Grade grade = gradeRepository.getByUser_IdAndTask_Id(user.getId(), taskId);
 					responseObject.put("title", grade.getTask().getTitle());
-					responseObject.put("taskId", grade.getTask().getId());
-					responseObject.put("grade", grade.getGrade()==null? "-/-":String.valueOf(grade.getGrade()));
-					responseObject.put("name", grade.getTask().getCourse().getPracticant().getName());
+					responseObject.put("grade", grade.getGrade()==null? "":grade.getGrade());
 					responseObject.put("description", grade.getTask().getDescription());
 					responseObject.put("submission", grade.getSubmission()==null? "No submission":grade.getSubmission());
 					responseObject.put("comment", grade.getComment());
+					responseObject.put("teacher", grade.getTask().getCourse().getPracticant().getName());
 					return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
 				}
 				else {
 					if (userId != null ) {
 						JSONObject responseObject = new JSONObject();
-						Grade grade = gradeRepository.getByUser_IdAndTask_Id(user.getId(), taskId);
+						Grade grade = gradeRepository.getByUser_IdAndTask_Id(userId, taskId);
 						responseObject.put("title", grade.getTask().getTitle());
-						responseObject.put("taskId", grade.getTask().getId());
-						responseObject.put("grade", grade.getGrade()==null? "-/-":String.valueOf(grade.getGrade()));
-						responseObject.put("name", grade.getTask().getCourse().getPracticant().getName());
+						responseObject.put("grade", grade.getGrade()==null? "":grade.getGrade());
 						responseObject.put("description", grade.getTask().getDescription());
-						responseObject.put("submission", grade.getSubmission()==null? "No submission":grade.getSubmission());
+						responseObject.put("submission", grade.getSubmission());
 						responseObject.put("comment", grade.getComment());
-						responseObject.put("student", grade.getUser().getName());
-						responseObject.put("studentId", grade.getUser().getId());
 						return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
 					}
 					else {
 						JSONArray responseObject = new JSONArray();
 						taskRepository.getById(taskId).getGrades().forEach(grade -> {
 							JSONObject object = new JSONObject();
-							object.put("title", grade.getTask().getTitle());
 							object.put("taskId", grade.getTask().getId());
-							object.put("grade", grade.getGrade()==null? "-/-":String.valueOf(grade.getGrade()));
-							object.put("name", grade.getTask().getCourse().getPracticant().getName());
-							object.put("description", grade.getTask().getDescription());
 							object.put("submission", grade.getSubmission()==null? "No submission":grade.getSubmission());
-							object.put("comment", grade.getComment());
 							object.put("student", grade.getUser().getName());
 							object.put("studentId", grade.getUser().getId());
+							object.put("graded", grade.getGraded());
 							responseObject.put(object);
 						});
 						return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
@@ -271,15 +263,15 @@ public class TasksController {
   public ResponseEntity<String> tasksGradePut(
 		@RequestParam Long taskId,
 		@RequestParam(required = false) Long userId,
-		@RequestParam(required = false) int gradeValue,
+		@RequestParam(required = false) Integer gradeValue,
 		@RequestParam(required = false) String comment,
-		@RequestParam(required = false) String submission,
+		@RequestParam(required = false) Blob submission,
 		@RequestParam String token) {
 		try {
 			User user = tokenRepository.getByToken(token).getUser();
 			if (user.getRole() == Roles.STUDENT) {
 				if (gradeRepository.existsByUser_IdAndTask_Id(user.getId(), taskId)) {
-					Grade grade = gradeRepository.getByUser_IdAndTask_Id(user.getId(), taskId);
+					Grade grade = gradeRepository.getByUser_IdAndTask_Id(user.getId(), taskId); 
 					grade.setTask(taskRepository.getById(taskId));
 					grade.setUser(userRepository.getById(user.getId()));
 					grade.setFinished(true);
@@ -295,10 +287,15 @@ public class TasksController {
 				try {
 					if (gradeRepository.existsByUser_IdAndTask_Id(userId, taskId)) {
 						Grade grade = gradeRepository.getByUser_IdAndTask_Id(userId, taskId);
-						grade.setGrade(gradeValue);
-						if (comment != null) {
-							grade.setComment(comment);
+						if (gradeValue != null) {
+							grade.setGraded(true);
+							grade.setFinished(true);
 						}
+						else {
+							grade.setGraded(false);
+						}
+						grade.setGrade(gradeValue);
+						grade.setComment(comment);
 						gradeRepository.save(grade);
 						return new ResponseEntity<String>("Grade of task was succesfuly changed", HttpStatus.OK);
 					}
@@ -306,6 +303,8 @@ public class TasksController {
 						Grade grade = new Grade();
 						grade.setTask(taskRepository.getById(taskId));
 						grade.setUser(userRepository.getById(userId));
+						grade.setFinished(true);
+						grade.setGraded(true);
 						grade.setGrade(gradeValue);
 						grade.setComment(comment);
 						gradeRepository.save(grade);

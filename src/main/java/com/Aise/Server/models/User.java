@@ -18,7 +18,7 @@ public class User{
   @Column(unique = true) private String email;
   @Column private String name;
   @Column private String password = "Aitu2022!";
-  @Column @Enumerated(EnumType.STRING) private Roles role;
+  @Column(columnDefinition = "enum('STUDENT','TEACHER','ADMIN')") @Enumerated(EnumType.STRING) private Roles role;
 
   public User() {}
 

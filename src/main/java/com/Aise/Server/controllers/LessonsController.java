@@ -1,8 +1,8 @@
 package com.Aise.Server.controllers;
 
 import java.sql.Time;
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -45,49 +45,82 @@ public class LessonsController {
 	@GetMapping("/lessons")
 	@ResponseBody
 	public ResponseEntity<String> lessonsGet(
-		@RequestParam(required = false) DayOfWeek weekDay,
+		@RequestParam(required = false) Long groupId,
 		@RequestParam String token) {
 		if (tokenRepository.existsByToken(token)) {
 			JSONArray responseObject = new JSONArray();
 			User user = tokenRepository.getByToken(token).getUser();
-			DayOfWeek selectedDay = (weekDay==null?DayOfWeek.of(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)):weekDay);
-			System.out.println(selectedDay);
-			ArrayList<Lesson> lessonsList = new ArrayList<>();
-			if (user.getRole() == Roles.STUDENT) {
-				groupParticipantRepository.getAllByUser_Id(user.getId()).forEach(group -> {
-					group.getGroup().getCourses().forEach(course -> {
-						lessonRepository.getAllByCourse_IdAndWeekDay(course.getId(), selectedDay).forEach(lesson -> {
+			if (user.getRole() != Roles.ADMIN || groupId == null) {
+				for (DayOfWeek day: DayOfWeek.values()) {
+					ArrayList<Lesson> lessonsList = new ArrayList<>();
+					if (user.getRole() == Roles.STUDENT) {
+						groupParticipantRepository.getAllByUser_Id(user.getId()).forEach(group -> {
+							group.getGroup().getCourses().forEach(course -> {
+								lessonRepository.getAllByCourse_IdAndWeekDay(course.getId(), day).forEach(lesson -> {
+									lessonsList.add(lesson);
+								});
+							});
+						});
+					}
+					else {
+						courseRepository.getAllByLecturer_IdOrPracticant_Id(user.getId(), user.getId()).forEach(course -> {
+							lessonRepository.getAllByCourse_IdAndWeekDay(course.getId(), day).forEach(lesson -> {
+								lessonsList.add(lesson);
+							});
+						});
+					}	
+					JSONObject dayObject = new JSONObject();
+					dayObject.put("day", day);
+					JSONArray lessonArray = new JSONArray();
+					lessonsList.forEach(lesson -> {
+						JSONObject object = new JSONObject();
+						object.put("course", lesson.getCourse().getCourseName());
+						object.put("courseId", lesson.getCourse().getId());
+						object.put("start", lesson.getStartTime());
+						object.put("end", lesson.getEndTime());
+						object.put("room", lesson.getRoom().getRoom());
+						object.put("type", lesson.getType().toString());
+						if (lesson.getType() == LessonTypes.LECTURE) {
+							object.put("teacher", lesson.getCourse().getLecturer().getName());
+							object.put("teacherId", lesson.getCourse().getLecturer().getId());
+						}
+						else {
+							object.put("teacher", lesson.getCourse().getPracticant().getName());
+							object.put("teacherId", lesson.getCourse().getPracticant().getId());
+						}
+						lessonArray.put(object);
+					});
+					dayObject.put("lessons", lessonArray);
+					responseObject.put(dayObject);
+				} 
+			}
+			else {
+				for (DayOfWeek day: DayOfWeek.values()) {
+					ArrayList<Lesson> lessonsList = new ArrayList<>();
+					groupRepository.getById(groupId).getCourses().forEach(course -> {
+						lessonRepository.getAllByCourse_IdAndWeekDay(course.getId(), day).forEach(lesson -> {
 							lessonsList.add(lesson);
 						});
 					});
-				});
-			}
-			else {
-				courseRepository.getAllByLecturer_IdOrPracticant_Id(user.getId(), user.getId()).forEach(course -> {
-					lessonRepository.getAllByCourse_IdAndWeekDay(course.getId(), selectedDay).forEach(lesson -> {
-						lessonsList.add(lesson);
-					});
-				});
-			}
-			lessonsList.forEach(lesson -> {
-				JSONObject object = new JSONObject();
-				object.put("course", lesson.getCourse().getCourseName());
-				object.put("courseId", lesson.getCourse().getId());
-				object.put("start", lesson.getStartTime());
-				object.put("end", lesson.getEndTime());
-				object.put("room", lesson.getRoom().getRoom());
-				object.put("type", lesson.getType().toString());
-				if (lesson.getType() == LessonTypes.LECTURE) {
-					object.put("teacher", lesson.getCourse().getLecturer().getName());
-					object.put("teacherId", lesson.getCourse().getLecturer().getId());
+					if (lessonsList.size() > 0) {
+						JSONObject dayObject = new JSONObject();
+						dayObject.put("day", day);
+						JSONArray lessonArray = new JSONArray();
+						lessonsList.forEach(lesson -> {
+							JSONObject object = new JSONObject();
+							object.put("id", lesson.getId());
+							object.put("course", lesson.getCourse().getCourseName());
+							object.put("start", lesson.getStartTime());
+							object.put("end", lesson.getEndTime());
+							object.put("room", lesson.getRoom().getRoom());
+							object.put("type", lesson.getType().toString());
+							lessonArray.put(object);
+						});
+						dayObject.put("lessons", lessonArray);
+						responseObject.put(dayObject);
+					}
 				}
-				else {
-					object.put("teacher", lesson.getCourse().getPracticant().getName());
-					object.put("teacherId", lesson.getCourse().getPracticant().getId());
-				}
-				object.put("weekday", lesson.getWeekDay());
-				responseObject.put(object);
-			});
+			}
 			return new ResponseEntity<String>(responseObject.toString(4), HttpStatus.OK);
 		}
 		else {
@@ -99,8 +132,8 @@ public class LessonsController {
 	@ResponseBody
 	public ResponseEntity<String> lessonsPost(
 		@RequestParam Long courseId,
-		@RequestParam Time start,
-		@RequestParam Time end,
+		@RequestParam String start,
+		@RequestParam String end,
 		@RequestParam DayOfWeek weekDay,
 		@RequestParam LessonTypes type,
 		@RequestParam(required = false) String room,
@@ -111,8 +144,8 @@ public class LessonsController {
 				try {
 					Lesson lesson = new Lesson();
 					lesson.setCourse(courseRepository.getById(courseId));
-					lesson.setStartTime(start);
-					lesson.setEndTime(end);
+					lesson.setStartTime(LocalTime.parse(start).toString());
+					lesson.setEndTime(LocalTime.parse(end).toString());
 					lesson.setWeekDay(weekDay);
 					lesson.setType(type);
 					lesson.setRoom(roomRepository.getByRoom((room == null? "Online":room)));

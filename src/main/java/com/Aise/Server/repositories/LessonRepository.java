@@ -3,6 +3,8 @@ package com.Aise.Server.repositories;
 import java.time.DayOfWeek;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import com.Aise.Server.models.Lesson;
 
 import org.springframework.data.jpa.repository.JpaRepository;

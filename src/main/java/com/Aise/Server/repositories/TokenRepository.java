@@ -2,7 +2,6 @@ package com.Aise.Server.repositories;
 
 import java.sql.Date;
 
-import javax.persistence.Transient;
 import javax.transaction.Transactional;
 
 import com.Aise.Server.models.Token;
