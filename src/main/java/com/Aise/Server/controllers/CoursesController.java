@@ -57,6 +57,7 @@ public class CoursesController {
 		@RequestParam(required = false) Long groupId,
 		@RequestParam(required = false) Long userId,
 		@RequestParam(required = false) Boolean getAll,
+		@RequestParam(required = false) Boolean getFullList,
 		@RequestParam String token) {
 		try {
 			JSONArray responseObject = new JSONArray();
@@ -87,6 +88,30 @@ public class CoursesController {
 									responseObject.put(object);
 								});
 							});
+						}
+						else if (getFullList != null) {
+							JSONObject rObject = new JSONObject();
+							JSONArray lecturerCourses = new JSONArray();						
+							courseRepository.getAllByLecturer_id(user.getId()).forEach(course -> {
+								JSONObject object = new JSONObject();
+								object.put("courseId", course.getId());
+								object.put("courseName", course.getCourseName());
+								object.put("groupId", course.getGroup().getId());
+								object.put("groupName", course.getGroup().getGroupName());
+								lecturerCourses.put(object);
+							});
+							rObject.put("Lecturer", lecturerCourses);
+							JSONArray practicantCourses = new JSONArray();						
+							courseRepository.getAllByPracticant_id(user.getId()).forEach(course -> {
+								JSONObject object = new JSONObject();
+								object.put("courseId", course.getId());
+								object.put("courseName", course.getCourseName());
+								object.put("groupId", course.getGroup().getId());
+								object.put("groupName", course.getGroup().getGroupName());
+								practicantCourses.put(object);
+							});
+							rObject.put("Practicant", practicantCourses);
+							return new ResponseEntity<String>(rObject.toString(4), HttpStatus.OK);
 						}
 						else { 
 							courseRepository.getAllByPracticant_id(user.getId()).forEach(course -> {
@@ -128,6 +153,30 @@ public class CoursesController {
 								responseObject.put(object);
 							});	
 						}
+						else if (getFullList != null) {
+							JSONObject rObject = new JSONObject();
+							JSONArray lecturerCourses = new JSONArray();						
+							courseRepository.getAllByLecturer_id(user.getId()).forEach(course -> {
+								JSONObject object = new JSONObject();
+								object.put("courseId", course.getId());
+								object.put("courseName", course.getCourseName());
+								object.put("groupId", course.getGroup().getId());
+								object.put("groupName", course.getGroup().getGroupName());
+								lecturerCourses.put(object);
+							});
+							rObject.put("Lecturer", lecturerCourses);
+							JSONArray practicantCourses = new JSONArray();						
+							courseRepository.getAllByPracticant_id(user.getId()).forEach(course -> {
+								JSONObject object = new JSONObject();
+								object.put("courseId", course.getId());
+								object.put("courseName", course.getCourseName());
+								object.put("groupId", course.getGroup().getId());
+								object.put("groupName", course.getGroup().getGroupName());
+								practicantCourses.put(object);
+							});
+							rObject.put("Practicant", practicantCourses);
+							return new ResponseEntity<String>(rObject.toString(4), HttpStatus.OK);
+						}
 						else {
 							courseRepository.getAllByPracticant_id(user.getId()).forEach(course -> {
 								JSONObject object = new JSONObject();
@@ -135,10 +184,6 @@ public class CoursesController {
 								object.put("courseName", course.getCourseName());
 								object.put("groupId", course.getGroup().getId());
 								object.put("groupName", course.getGroup().getGroupName());
-								object.put("practicant", course.getPracticant().getName());
-								object.put("practicantId", course.getPracticant().getId());
-								object.put("lecturer", course.getLecturer().getName());
-								object.put("lecturerId", course.getLecturer().getId());
 								responseObject.put(object);
 							});
 						}

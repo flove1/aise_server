@@ -187,7 +187,6 @@ public class TasksController {
 			User user = tokenRepository.getByToken(token).getUser();
 			if (user.getRole() != Roles.STUDENT) {
 				try {
-					gradeRepository.deleteAllByTask_Id(taskId);
 					taskRepository.deleteById(taskId);
 					return new ResponseEntity<String>("Task and its grades was deleted", HttpStatus.OK);
 				} catch (NullPointerException|DataIntegrityViolationException e) {

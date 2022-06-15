@@ -2,6 +2,7 @@ package com.Aise.Server.models;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,7 +17,7 @@ public class Group{
   @Column @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
   @Column private String groupName;
 
-  @OneToMany(mappedBy = "group")
+  @OneToMany(mappedBy = "group", cascade = CascadeType.REMOVE)
   List<Course> courses;
 
   public Group() {}

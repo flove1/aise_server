@@ -2,7 +2,6 @@ package com.Aise.Server.models;
 
 import java.sql.Blob;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -24,12 +23,12 @@ import org.springframework.lang.Nullable;
 public class Grade {
   @Column @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Task.class, cascade = CascadeType.REMOVE)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Task.class)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "task_id", referencedColumnName = "id")
   private Task task;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = User.class, cascade = CascadeType.REMOVE)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = User.class)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "user_id", referencedColumnName = "id")
   private User user;

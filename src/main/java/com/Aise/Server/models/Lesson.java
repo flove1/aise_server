@@ -2,7 +2,6 @@ package com.Aise.Server.models;
 
 import java.time.DayOfWeek;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -25,7 +24,7 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Lesson {
   @Column @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Course.class, cascade = CascadeType.REMOVE)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Course.class)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "course_id", referencedColumnName = "id")
   private Course course;

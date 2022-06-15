@@ -3,7 +3,6 @@ package com.Aise.Server.models;
 import java.sql.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -28,7 +27,7 @@ public class Task {
   @Column private Date deadline;
   @Column private String description = "No description";
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Course.class, cascade = CascadeType.REMOVE)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Course.class)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "course_id", referencedColumnName = "id")
   private Course course;
