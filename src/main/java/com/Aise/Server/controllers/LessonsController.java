@@ -1,10 +1,8 @@
 package com.Aise.Server.controllers;
 
-import java.sql.Time;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import com.Aise.Server.models.Lesson;
 import com.Aise.Server.models.User;

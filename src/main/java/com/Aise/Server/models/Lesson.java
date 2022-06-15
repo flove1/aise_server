@@ -1,8 +1,6 @@
 package com.Aise.Server.models;
 
-import java.sql.Time;
 import java.time.DayOfWeek;
-import java.time.LocalTime;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;

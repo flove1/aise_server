@@ -11,7 +11,6 @@ import com.Aise.Server.repositories.TaskRepository;
 import com.Aise.Server.repositories.TokenRepository;
 import com.Aise.Server.repositories.UserRepository;
 
-import org.hibernate.query.criteria.internal.path.CollectionAttributeJoin.TreatedCollectionAttributeJoin;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
