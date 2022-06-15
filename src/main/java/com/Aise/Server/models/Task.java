@@ -22,10 +22,10 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name="tasks")
 public class Task {
   @Column @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
-  @Column private String title = "No title";
+  @Column(columnDefinition = "varchar(255) default 'No title'") private String title = "No title";
   
   @Column private Date deadline;
-  @Column private String description = "No description";
+  @Column(columnDefinition = "varchar(255) default 'No description'") private String description = "No description";
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = Course.class)
   @OnDelete(action = OnDeleteAction.CASCADE)

@@ -1,0 +1,30 @@
+Spring Boot server for coding lab project
+
+Dependencies:
+	Java 17,
+	MariaDB
+
+To start the server, you need to run ./gradlew bootRun 
+
+Default credentials are:
+	Admin:
+		Login: admin
+		Password: aiseadmin
+
+	Olzhas (teacher):
+		Login; olzhas@gmail.com
+		Password: Aitu2022!
+
+	Dinara:
+		Login; dinara@gmail.com
+		Password: Aitu2022!
+
+	Kirill:
+		Login; kirill@gmail.com
+		Password: Aitu2022!
+
+	Nurbol:
+		Login; nurbol@gmail.com
+		Password: Aitu2022!
+
+

@@ -36,8 +36,8 @@ public class Grade {
   @Column private Integer grade;
   @Column @Lob private String comment;
   @Column @Lob private Blob submission;
-  @Nullable @Column(columnDefinition = "BIT") private Boolean finished = false;
-  @Column(columnDefinition = "BIT") private Boolean graded = false;
+  @Nullable @Column(columnDefinition = "BIT default 0") private Boolean finished = false;
+  @Column(columnDefinition = "BIT default 0") private Boolean graded = false;
 
   public long getId() {
     return id;

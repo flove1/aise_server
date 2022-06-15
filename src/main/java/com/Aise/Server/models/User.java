@@ -17,8 +17,8 @@ public class User{
   @Column @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
   @Column(unique = true) private String email;
   @Column private String name;
-  @Column private String password = "Aitu2022!";
-  @Column(columnDefinition = "enum('STUDENT','TEACHER','ADMIN')") @Enumerated(EnumType.STRING) private Roles role;
+  @Column(columnDefinition="varchar(255) default 'Aitu2022!'") private String password = "Aitu2022!";
+  @Column(columnDefinition = "enum('STUDENT','TEACHER','ADMIN')") @Enumerated(EnumType.STRING) private Roles role = Roles.STUDENT;
 
   public User() {}
 
